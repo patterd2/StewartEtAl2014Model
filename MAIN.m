@@ -1,10 +1,12 @@
-function main
+function MAIN
+tic;
 %FULL VERSION - reads data from input file 
 %Multidirectional wind option
 %Note - 'field' refers to the x & y rectangular grid, cells are 1m^2 elements
 %In this version, 
 %   species 1 is grass (black gramma) and species 2 is shrub (creosotebush)
 %   resource 1 is water and resource 2 is nitrogen
+
 %---------------DEFINE VARIABLES-------------------------------------------
 %use global to pass values to subroutines
 %defined variables and arrays
@@ -20,7 +22,10 @@ global fn_r_and_p fn_change_in_biomass fn_plot_graphs
 %Read in parameters and data. NOTE - fscanf reads data column by row 
 fid = fopen ('input.dat'); %contains all defined variables and parameters
 fgetl(fid);fgetl(fid);%reads line with parameter description and ignores blank lines
+
+% Change length of simulation in data file HERE
 time = fscanf (fid, '%d');                          %integer value for years of simulation
+
 fgetl(fid); fieldsize = fscanf (fid, '%d');         %field is fieldsize m^2
 fgetl(fid); vectors = fscanf (fid, '%d');           %number of vectors (1=water, 2=wind, 3=cows)
 fgetl(fid); randp = fscanf (fid, '%d');             %number of resources
@@ -39,16 +44,20 @@ fgetl(fid);fgetl(fid); mortality = fscanf (fid, '%g', [species 1]);        %plan
 fgetl(fid);fgetl(fid); drought = fscanf (fid, '%g', [species 1]);            %drought resistance of species -percentage term to relax quantity of biomass killed by water drought
 fgetl(fid);fgetl(fid); [Reprod, count] = fscanf (fid, '%g', [vectors species]);  %percentage of propagules moved by each vector (derived loosely from USFAS website)
     Reprod=Reprod';      % Matlab reads in arrays column by row - corrected here
-fgetl(fid);fgetl(fid);fgetl(fid);initial_species = fscanf (fid, '%g', [species 1]); %Initial vegetation cover (g/m2) of each i species (from John and Tony)
+%keyboard;
+    fgetl(fid);fgetl(fid);fgetl(fid);initial_species = fscanf (fid, '%g', [species 1]); %Initial vegetation cover (g/m2) of each i species (from John and Tony)
 fgetl(fid);fgetl(fid);   % Initial values of randp, (for each resource) corresponding to mid soil layer store (model is insensitive to any realistic value set here)
     initial_randp = fscanf (fid, '%g', [randp 1 ]);         % Matlab reads in arrays column by row - corrected here
 fgetl(fid);fgetl(fid);   % Initial values of randp, (for each resource) corresponding to deep soil layer store
     initial_deep_randp = fscanf (fid, '%g', [randp 1 ]);    % Matlab reads in arrays column by row - corrected here  (model is insensitive to realistic numbers) 
 fgetl(fid);fgetl(fid); Random_field_flag=fscanf (fid, '%d'); %logical flag 1 = generate random species distribution, 0 = uniform distribution
 fgetl(fid);
-%---------------READ IN WATER INPUT (RAIN) DATA----------------------------
-raindata=csvread ('raindat.dat',1,0); %read in yearly raindata (derived from tree-ring, real record, or set own pattern)
-%---------------RESOURCE SMOOSH MATRICES-----------------------------------
+
+%% ---------------READ IN WATER INPUT (RAIN) DATA----------------------------
+raindata=readmatrix('raindat.dat'); %read in yearly raindata (derived from tree-ring, real record, or set own pattern)
+%keyboard;
+
+%% ---------------RESOURCE SMOOSH MATRICES-----------------------------------
 for i=1:species     % Smoosh matrix for water i=1 for species 1, i=2 for species 2 etc
     fgetl(fid);
     temp = fscanf (fid, '%g', [vectors vectors]);
@@ -76,7 +85,7 @@ if (gradient>10)
     Swater(3,2,1)=1;Swater(3,2,2)=1; %resource smoosh
 elseif (gradient==10), Swater=Swater1; %Smoosh array for water is dependent on gradient (0=flat, 10=represents gradient that corresponds to defininition of smoosh matrix) 
 elseif (gradient==0)
-    for i=1:species,Swater(:,:,i)=Swater2;end,
+    for i=1:species,Swater(:,:,i)=Swater2;end
 else        %Linear interpolation between the two smoosh matrices
     for i=1:species,Swater(:,:,i)=(Swater1(:,:,i)-Swater2(:,:))*(gradient/10)+Swater2(:,:);end
 end
@@ -86,7 +95,7 @@ for i=1:species %populate field_species array
     field_species(:,:,i)=initial_species(i); %field_species contains biomass (g/m2) for each species in cell
 end                                          
 if (Random_field_flag==1)  %Calculation of 'RandomField' data was done ouside of this code - its a matrix of random numbers approximating white noise
-    RandomField=csvread ('random100.dat',1,0); %stored data will only work for fields of up to 100 x 100
+    RandomField=csvread('random100.dat',1,0); %stored data will only work for fields of up to 100 x 100
     %for i=1:species  % Use this loop if initial distribution of species etc is also to be random, a pointless excersise if intital value of
     %shrubs represents a seed source and not established plants(i.e.biomass<B_threshold)
         for column=1:fieldsize
@@ -155,25 +164,31 @@ counter=0; clc, %initialise couter and clear screen (watch out though - this doe
 %Swater(3,2,2)=1;Swind(3,2,2)=1; Scow(3,2,2)=1;
 %---------------TIME LOOP - CALCULATE CHANGE OF RESOURCE AND BIOMASS-------
 for loop=1:time     %Time loop - parameters recalcualted each time step
-    loop 
+    %loop; 
     counter=counter+1; %counter (seperate from 'loop' value) to control number of output graphs
     %-----------MODIFY INPUT VARIABLES IF APPROPRIATE----------------------
     %Rainfall variability
-    if (loop<=312) %use this loop with long term (312 yrs) reconstructed data
-    QV(1)=raindata(loop,2);
-    else %(loop>=312); i.e. if your running the loop beyond the years of rainfall data available in file
-        QV(1)=243
-    end   
+    %keyboard;
+    %if (loop<=312) %use this loop with long term (312 yrs) reconstructed data
+    %QV(1)=raindata(loop,2);
+    %else %(loop>=312); i.e. if your running the loop beyond the years of rainfall data available in file
+    %    QV(1)=243;
+    %end   
+
+    QV(1) = 2*(238 + 10*rand());
+
     %Example of code that can be used to specify a drought (delete % signs to execute this section)
 %    if ((loop>50)&&(loop<57)) %drought between years 51 and 56
 %        QV(1)=25;  %i.e. very low rainfall
 %    else
 %        QV(1)=raindata(loop,2); %value from input data
 %    end  
+
     %Example of code that can be used to remove some proportion of either species - Disturbances
     %if ((loop>220)&&(loop<222))  %during itteration (year)221
     %    field_species(:,:,2)=0.1; %all shrubs die leaving a seed bank
     %end
+
     %-----------CALL SUBROUTINES-------------------------------------------
     %PART ONE - calc randp movement (top soil layer) under action of vectors 
     [fn_r_and_p]=part_one(); %move resource according to biomass distribution
@@ -204,8 +219,13 @@ for loop=1:time     %Time loop - parameters recalcualted each time step
     [C conn]=max(con_count(:,2)); %find maximum number of continuously connected cells on transect
     max_connected_cells(loop+1,1)=loop; max_connected_cells(loop+1,2)=con_count(conn,2); %store values
     ave_connected_cells(loop+1,1)=loop; ave_connected_cells(loop+1,2)=(sum(con_count(:,1))/fieldsize)*100;
-    if ((counter==100)||(loop==time))  
+    
+    if loop==1 % to see the initial condition
+        [fn_plot_graphs]=plot_all_graphs();
+    end
+    if ((counter==20)||(loop==time))  
         [fn_plot_graphs]=plot_all_graphs(); % Graphing subroutine
         counter=0; %counter (seperate from 'loop' value) to control number of output graphs
     end %end of graph loop
 end %end of time loop
+toc;
