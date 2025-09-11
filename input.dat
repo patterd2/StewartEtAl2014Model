@@ -1,6 +1,6 @@
 %NOTE - Matlab reads data in column by row JS
 %integer value for years of simulation: time= (NB - should equal lines of data in raindat.dat) 312
-300
+500
 %size of simulated area (no. cells x no. cells): fieldsize =
 70
 "%number of vectors (wind, water, cows): vectors ="
@@ -42,14 +42,14 @@
 1.0   0.0  0.0
 % initialize vegetation type matrix [fieldsize x fieldsize] initialize cover of each vegetation type in turn 
 "%[fieldsize x fieldsize] (g): field (:, :, 1...)="
-50
-10
+25
+5
 "%Initial values of mid_resource, for each type of R and P (water - g/m2, N - g/m2)75/1"
 25
-0.5
+5
 "%Initial values of deep_resource in deep layer, for each type of R and P (water - g/m2, N - g/m2)75/1"
 25
-0.5
+5
 "% Random field flag 1= use random, 0=uniform"
 1
 "%Specify advection matrices for resources(species1=3x3,species2=3x3)"

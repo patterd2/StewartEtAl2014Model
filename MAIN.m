@@ -1,4 +1,4 @@
-function MAIN
+function MAIN(p, g, T_total)
 tic;
 %FULL VERSION - reads data from input file 
 %Multidirectional wind option
@@ -18,20 +18,25 @@ global growth_rate loop counter
 global time_series_plant time_series_resource max_connected_cells ave_connected_cells
 % subroutines
 global fn_r_and_p fn_change_in_biomass fn_plot_graphs
+
 %---------------READ IN DATA-----------------------------------------------
 %Read in parameters and data. NOTE - fscanf reads data column by row 
 fid = fopen ('input.dat'); %contains all defined variables and parameters
 fgetl(fid);fgetl(fid);%reads line with parameter description and ignores blank lines
 
 % Change length of simulation in data file HERE
-time = fscanf (fid, '%d');                          %integer value for years of simulation
+time = fscanf (fid, '%d');   %integer value for years of simulation
+time = T_total;
 
 fgetl(fid); fieldsize = fscanf (fid, '%d');         %field is fieldsize m^2
 fgetl(fid); vectors = fscanf (fid, '%d');           %number of vectors (1=water, 2=wind, 3=cows)
 fgetl(fid); randp = fscanf (fid, '%d');             %number of resources
 fgetl(fid); species = fscanf (fid, '%d');           %number of plant species
 fgetl(fid); windir = fscanf (fid, '%d');            %wind direction 1=downhill, 2=uphill, 3=L-to-R, 4=R-to-L 
+
 fgetl(fid); gradient = fscanf (fid, '%d');          %reads in gradient of hill for smoosh calcs (arbitrary value, where 10 represents a maximum gradient for which the parameters apply)    
+gradient = g; % overwrite value from input file
+
 fgetl(fid); Growth_lim = fscanf (fid, '%g', [species 1]);    %Limiting growth rate for each species as percent increase in biomass
 fgetl(fid);fgetl(fid); Bmax = fscanf (fid, '%g', [species 1]); %Maximum biomass for each species (g/m^2)- derived from 'ecotone'
 fgetl(fid);fgetl(fid); QV = fscanf (fid, '%g', [randp 1]);    %Vertical Flux - vertical addition of resource (g/m2.yr)
@@ -52,9 +57,9 @@ fgetl(fid);fgetl(fid);   % Initial values of randp, (for each resource) correspo
     initial_deep_randp = fscanf (fid, '%g', [randp 1 ]);    % Matlab reads in arrays column by row - corrected here  (model is insensitive to realistic numbers) 
 fgetl(fid);fgetl(fid); Random_field_flag=fscanf (fid, '%d'); %logical flag 1 = generate random species distribution, 0 = uniform distribution
 fgetl(fid);
-
+%keyboard;
 %% ---------------READ IN WATER INPUT (RAIN) DATA----------------------------
-raindata=readmatrix('raindat.dat'); %read in yearly raindata (derived from tree-ring, real record, or set own pattern)
+raindata = readmatrix('raindat.dat'); %read in yearly raindata (derived from tree-ring, real record, or set own pattern)
 %keyboard;
 
 %% ---------------RESOURCE SMOOSH MATRICES-----------------------------------
@@ -95,7 +100,8 @@ for i=1:species %populate field_species array
     field_species(:,:,i)=initial_species(i); %field_species contains biomass (g/m2) for each species in cell
 end                                          
 if (Random_field_flag==1)  %Calculation of 'RandomField' data was done ouside of this code - its a matrix of random numbers approximating white noise
-    RandomField=csvread('random100.dat',1,0); %stored data will only work for fields of up to 100 x 100
+    RandomField= rand(100,100); %csvread('random100.dat',1,0); %stored data will only work for fields of up to 100 x 100
+    %keyboard;
     %for i=1:species  % Use this loop if initial distribution of species etc is also to be random, a pointless excersise if intital value of
     %shrubs represents a seed source and not established plants(i.e.biomass<B_threshold)
         for column=1:fieldsize
@@ -175,7 +181,7 @@ for loop=1:time     %Time loop - parameters recalcualted each time step
     %    QV(1)=243;
     %end   
 
-    QV(1) = 2*(238 + 10*rand());
+    QV(1) = p*(238 + 10*rand());
 
     %Example of code that can be used to specify a drought (delete % signs to execute this section)
 %    if ((loop>50)&&(loop<57)) %drought between years 51 and 56
@@ -223,7 +229,7 @@ for loop=1:time     %Time loop - parameters recalcualted each time step
     if loop==1 % to see the initial condition
         [fn_plot_graphs]=plot_all_graphs();
     end
-    if ((counter==20)||(loop==time))  
+    if ((counter==25)||(loop==time))  
         [fn_plot_graphs]=plot_all_graphs(); % Graphing subroutine
         counter=0; %counter (seperate from 'loop' value) to control number of output graphs
     end %end of graph loop

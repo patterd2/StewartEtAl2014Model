@@ -15,13 +15,16 @@ global time_series_plant time_series_resource plant_transect resource_transect m
 % functions
 global fn_plot_graphs
 %This if loop is set up to plot graphs as data vs year when 312 yrs of tree-ring data are used
-if (time>=312)
-    year=loop+1658; %use this line when running with 312 years data
-else
-    year=loop; %i.e. when anything other than the tree-ring rainfall is used
-end
+% if (time>=312)
+%     year=loop+1658; %use this line when running with 312 years data
+% else
+%     year=loop; %i.e. when anything other than the tree-ring rainfall is used
+% end
 
 %keyboard;
+
+year=loop;
+
 %% --------------------plot field maps-------------------  
 nu_fieldsize=fieldsize; %Plot data that is removed from any suggestion of an edge effect (cheating - but ask me why)
 plot_field=zeros(nu_fieldsize,nu_fieldsize,species+1);
@@ -41,7 +44,7 @@ imagesc(plot_field(:,:,3));
 clim([0 300]);
 hold off, colorbar; %hold command may or maynot be required depending on computer
 title(['Combined biomass density map for year ',num2str(loop)])
-xlabel('Distance across field (m)'), ylabel('Distance downslope (m)')
+xlabel('Distance across field (m)'), ylabel('Distance downslope (m)');
 
 %figure;
 %%colormap(bone);
@@ -106,6 +109,19 @@ if (loop==time)
     plot(time_series_plant(:,1),time_series_plant(:,2),'-+',time_series_plant(:,1),time_series_plant(:,3),'-*');
     legend ('grass', 'shrub');title ('species density');
     xlabel('Time (years)'), ylabel('Average species density (g/m^2)');
+    ylim([0 150]);
+
+    figure; %Plot graph of change in total resources in the landscape with time
+    hold on;
+    plot(time_series_resource(:,3));
+    plot(time_series_resource(:,4),'-*');
+    plot(time_series_resource(:,5),'-+');
+    plot(time_series_resource(:,6),'-o');
+    legend('mid water', 'mid nitrogen','deep water','deep nitrogen');
+    title('Total resources');
+    xlabel('Time (years)');
+    %ylim([0 150]);
+    %keyboard;
 end
 
 %% Plot data in csv file, if required (I used this for debugging)
