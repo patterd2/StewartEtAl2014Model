@@ -100,7 +100,7 @@ for i=1:species %populate field_species array
     field_species(:,:,i)=initial_species(i); %field_species contains biomass (g/m2) for each species in cell
 end                                          
 if (Random_field_flag==1)  %Calculation of 'RandomField' data was done ouside of this code - its a matrix of random numbers approximating white noise
-    RandomField= rand(100,100); %csvread('random100.dat',1,0); %stored data will only work for fields of up to 100 x 100
+    RandomField = rand(100,100); %csvread('random100.dat',1,0); %stored data will only work for fields of up to 100 x 100
     %keyboard;
     %for i=1:species  % Use this loop if initial distribution of species etc is also to be random, a pointless excersise if intital value of
     %shrubs represents a seed source and not established plants(i.e.biomass<B_threshold)

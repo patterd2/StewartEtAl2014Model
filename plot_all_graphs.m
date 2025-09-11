@@ -106,17 +106,19 @@ xlabel('Distance across field (m)'), ylabel('Distance downslope (m)');
 
 if (loop==time)
     figure;     %Plot graph of change in biomass with time
-    plot(time_series_plant(:,1),time_series_plant(:,2),'-+',time_series_plant(:,1),time_series_plant(:,3),'-*');
+    hold on;
+    plot(time_series_plant(:,2),'-+')
+    plot(time_series_plant(:,3),'-*');
     legend ('grass', 'shrub');title ('species density');
     xlabel('Time (years)'), ylabel('Average species density (g/m^2)');
     ylim([0 150]);
 
     figure; %Plot graph of change in total resources in the landscape with time
     hold on;
-    plot(time_series_resource(:,3));
-    plot(time_series_resource(:,4),'-*');
-    plot(time_series_resource(:,5),'-+');
-    plot(time_series_resource(:,6),'-o');
+    plot(time_series_resource(:,2));
+    plot(time_series_resource(:,3),'-*');
+    plot(time_series_resource(:,4),'-+');
+    plot(time_series_resource(:,5),'-o');
     legend('mid water', 'mid nitrogen','deep water','deep nitrogen');
     title('Total resources');
     xlabel('Time (years)');
